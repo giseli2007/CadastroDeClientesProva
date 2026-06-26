@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import model.Cliente;
 
@@ -87,5 +88,30 @@ public class ClienteDAO {
 			e.printStackTrace();
 		}
 	}
-
+	
+	public List<Cliente> buscarPorNome(String nome) {
+		String sql = "SELECT * FROM clientes WHERE nome LIKE ?";
+		List<Cliente> clientes = new ArrayList<>();
+		
+		try(Connection conexao = Conexao.conectar();
+			PreparedStatement stmt = conexao.prepareStatement(sql)) {
+			
+			stmt.setString(1, "%" + nome + "%");
+			
+			try (ResultSet rs = stmt.executeQuery()) {
+				while(rs.next()) {
+					int id = rs.getInt("id");
+					String nomeCliente = rs.getString("nome");
+					String telefone = rs.getString("telefone");
+					String email = rs.getString("email");
+					String sexo = rs.getString("sexo");
+					
+					clientes.add(new Cliente(id, nomeCliente, telefone, email, sexo));
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return clientes;
+	}
 }

@@ -3,6 +3,9 @@ package view;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -16,6 +19,7 @@ import java.awt.Font;
 import java.awt.Color;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.RowFilter;
 import javax.swing.JRadioButton;
 import javax.swing.JButton;
 import javax.swing.JTable;
@@ -39,6 +43,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import java.util.regex.*;
+import javax.swing.table.TableRowSorter;
+
 
 public class TelaCadastro extends JFrame {
 
@@ -56,6 +63,7 @@ public class TelaCadastro extends JFrame {
 	private FileReader fileReader;
 	private BufferedReader bufferedReader;
 	private ClienteDAO dao;
+	private TableRowSorter<ClienteTableModel> sorter;
 
 	/**
 	 * Launch the application.
@@ -214,13 +222,24 @@ public class TelaCadastro extends JFrame {
 		JButton btnBuscar = new JButton("Buscar");
 		btnBuscar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String buscarNome = textBuscar.getText().toString();
-				if (!buscarNome.isBlank()) {
-					int indice = modelo.buscarCliente(buscarNome);
-					table.setRowSelectionInterval(indice, indice);
+				String buscarNome = textBuscar.getText().trim();
+				
+				if(buscarNome.isBlank()) {
+					return;
 				}
+				
+				List<Cliente> encontrados = dao.buscarPorNome(buscarNome);
+				if(encontrados.isEmpty()) {
+					JOptionPane.showMessageDialog(TelaCadastro.this,
+							"Nenhum cliente encontrado com esse nome.",
+							"Aviso",
+							JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				modelo.atualizarTabela((ArrayList<Cliente>) encontrados);
 			}
 		});
+		
 		btnBuscar.setBounds(278, 25, 105, 27);
 		panel_1.add(btnBuscar);
 		
@@ -237,6 +256,8 @@ public class TelaCadastro extends JFrame {
 		
 		table.setModel(modelo);
 		scrollPane.setViewportView(table);
+		sorter = new TableRowSorter<>(modelo);
+		table.setRowSorter(sorter);
 		
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBounds(0, 0, 737, 23);
