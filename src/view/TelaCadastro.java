@@ -417,6 +417,19 @@ public class TelaCadastro extends JFrame {
 		JMenu mnFerramentas = new JMenu("Ferramentas");
 		menuBar.add(mnFerramentas);
 
+		JMenuItem mntmImportarCsvValidado = new JMenuItem("Importar CSV Validado");
+		mntmImportarCsvValidado.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser jFileChooser = new JFileChooser();
+				if(jFileChooser.showOpenDialog(TelaCadastro.this) == JFileChooser.APPROVE_OPTION) {
+					File file = jFileChooser.getSelectedFile();
+					importarCsvValidado(file, modelo);
+				}
+			}
+		});
+		mnFerramentas.add(mntmImportarCsvValidado);
+
 		JMenuItem mntmExportaRelatorio = new JMenuItem("Exportar Relatório");
 		mntmExportaRelatorio.addActionListener(new ActionListener() {
 			@Override
@@ -434,6 +447,110 @@ public class TelaCadastro extends JFrame {
 		JMenu mnNewMenu_3 = new JMenu("Sobre");
 		menuBar.add(mnNewMenu_3);
 
+}
+
+	private void importarCsvValidado(File file, ClienteTableModel modelo) {
+    int importados = 0;
+    int rejeitados = 0;
+    StringBuilder linhasInvalidas = new StringBuilder();
+
+    try (FileReader fr = new FileReader(file);
+         BufferedReader br = new BufferedReader(fr)) {
+
+        String cabecalho = br.readLine(); // pula o cabeçalho
+
+        if (cabecalho == null) {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    "O arquivo está vazio.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String linha;
+        int numeroLinha = 1; // já contando o cabeçalho como linha 1
+
+        while ((linha = br.readLine()) != null) {
+            numeroLinha++;
+
+            if (linha.isBlank()) {
+                continue; // ignora linhas vazias no meio do arquivo
+            }
+
+            String[] campos = linha.split(",");
+
+            if (campos.length != 4) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": número de colunas incorreto\n");
+                continue;
+            }
+
+            String nome = campos[0].trim();
+            String telefone = campos[1].trim();
+            String email = campos[2].trim();
+            String sexo = campos[3].trim();
+
+            if (!Regex.validaNome(nome)) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": nome inválido (\"").append(nome).append("\")\n");
+                continue;
+            }
+
+            if (!Regex.validaEmail(email)) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": email inválido (\"").append(email).append("\")\n");
+                continue;
+            }
+
+            if (!Regex.validaTelefone(telefone)) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": telefone inválido (\"").append(telefone).append("\")\n");
+                continue;
+            }
+
+            if (sexo.isBlank()) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": sexo não informado\n");
+                continue;
+            }
+
+            Cliente cliente = new Cliente(nome, telefone, email, sexo);
+            modelo.addCliente(cliente);
+            dao.inserir(cliente);
+            importados++;
+        }
+
+        if (importados == 0 && rejeitados == 0) {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    "O arquivo está vazio.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String resumo = "Registros importados: " + importados
+                + "\nRegistros rejeitados: " + rejeitados;
+
+        if (rejeitados > 0) {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    resumo + "\n\nLinhas inválidas:\n" + linhasInvalidas,
+                    "Importação concluída com rejeições",
+                    JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    resumo, "Importação concluída com sucesso",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(TelaCadastro.this,
+                "Erro ao importar o arquivo: " + e.getMessage(), "Erro",
+                JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
 }
 
 	private void exportarRelatorio(File file, ClienteTableModel modelo) {
