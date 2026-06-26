@@ -7,6 +7,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+
 import model.Cliente;
 
 public class ClienteDAO {
@@ -28,6 +32,13 @@ public class ClienteDAO {
 			conexao.close();
 			
 		}catch(SQLException e) {
+			//B2-Q1
+			JDialog dialog = new JDialog((JFrame) null, "Erro", true);
+			dialog.setSize(850, 100);
+			dialog.setResizable(true);
+			dialog.add(new JLabel("Erro na conexão com o banco de dados! \n\nErro:  "+ e));
+			dialog.setLocationRelativeTo(null);
+			dialog.setVisible(true);
 			e.printStackTrace();
 		}
 	}
@@ -44,6 +55,13 @@ public class ClienteDAO {
 			conexao.close();
 			
 		}catch(SQLException e) {
+			//B2-Q1
+			JDialog dialog = new JDialog((JFrame) null, "Erro", true);
+			dialog.setSize(850, 100);
+			dialog.setResizable(true);
+			dialog.add(new JLabel("Erro na conexão com o banco de dados! \n\nErro:  "+ e));
+			dialog.setLocationRelativeTo(null);
+			dialog.setVisible(true);
 			e.printStackTrace();
 		}
 	}
@@ -65,6 +83,13 @@ public class ClienteDAO {
 				clientes.add(cliente);
 			}
 		}catch(SQLException e) {
+			//B2-Q1
+			JDialog dialog = new JDialog((JFrame) null, "Erro", true);
+			dialog.setSize(850, 100);
+			dialog.setResizable(true);
+			dialog.add(new JLabel("Erro na conexão com o banco de dados! \n\nErro:  "+ e));
+			dialog.setLocationRelativeTo(null);
+			dialog.setVisible(true);
 			e.printStackTrace();
 		}
 		return clientes;
@@ -85,6 +110,13 @@ public class ClienteDAO {
 			stmt.close();
 			conexao.close();
 		}catch(SQLException e) {
+			//B2-Q1
+			JDialog dialog = new JDialog((JFrame) null, "Erro", true);
+			dialog.setSize(850, 100);
+			dialog.setResizable(true);
+			dialog.add(new JLabel("Erro na conexão com o banco de dados! \n\nErro:  "+ e));
+			dialog.setLocationRelativeTo(null);
+			dialog.setVisible(true);
 			e.printStackTrace();
 		}
 	}
@@ -110,6 +142,13 @@ public class ClienteDAO {
 				}
 			}
 		} catch (SQLException e) {
+			//B2-Q1
+			JDialog dialog = new JDialog((JFrame) null, "Erro", true);
+			dialog.setSize(850, 100);
+			dialog.setResizable(true);
+			dialog.add(new JLabel("Erro na conexão com o banco de dados! \n\nErro:  "+ e));
+			dialog.setLocationRelativeTo(null);
+			dialog.setVisible(true);
 			e.printStackTrace();
 		}
 		return clientes;
