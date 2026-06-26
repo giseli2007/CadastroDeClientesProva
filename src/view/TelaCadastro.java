@@ -38,14 +38,20 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.util.regex.*;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.MaskFormatter;
 
 
 public class TelaCadastro extends JFrame {
@@ -56,6 +62,8 @@ public class TelaCadastro extends JFrame {
 	private JTextField textEmail;
 	private JTextField textTelefone;
 	private JTextField textBuscar;
+	private JFormattedTextField campoDataInicio;
+	private JFormattedTextField campoDataFim;
 	private JTable table;
 	private ClienteTableModel modelo;
 	private ArrayList<Cliente> clientes;
@@ -115,7 +123,7 @@ public class TelaCadastro extends JFrame {
 		contentPane.add(lblNewLabel_1);
 		
 		JPanel panel = new JPanel();
-		panel.setBounds(23, 127, 690, 158);
+		panel.setBounds(23, 127, 690, 195);
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
@@ -145,6 +153,24 @@ public class TelaCadastro extends JFrame {
 		JLabel lblNewLabel_4 = new JLabel("Telefone");
 		lblNewLabel_4.setBounds(394, 12, 60, 17);
 		panel.add(lblNewLabel_4);
+
+		JLabel lblNewLabel_5 = new JLabel("De:");
+		lblNewLabel_5.setBounds(12, 140, 60, 17);
+		panel.add(lblNewLabel_5);
+
+		campoDataInicio = criarCampoData();
+		campoDataInicio.setBounds(12, 158, 140, 27);
+		campoDataInicio.setColumns(10);
+		panel.add(campoDataInicio);
+
+		JLabel lblNewLabel_6 = new JLabel("Até:");
+		lblNewLabel_6.setBounds(170, 140, 60, 17);
+		panel.add(lblNewLabel_6);
+
+		campoDataFim = criarCampoData();
+		campoDataFim.setBounds(170, 158, 140, 27);
+		campoDataFim.setColumns(10);
+		panel.add(campoDataFim);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBackground(new Color(255, 255, 255));
@@ -167,7 +193,7 @@ public class TelaCadastro extends JFrame {
 		buttonGroup.add(rdbtnMasculino);
 		
 		JPanel panel_1 = new JPanel();
-		panel_1.setBounds(23, 299, 690, 77);
+		panel_1.setBounds(23, 336, 690, 77);
 		contentPane.add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -265,9 +291,47 @@ public class TelaCadastro extends JFrame {
 		textBuscar.setBounds(409, 25, 269, 27);
 		panel_1.add(textBuscar);
 		textBuscar.setColumns(10);
+
+		JButton btnBuscarData = new JButton("Buscar por Data");
+		btnBuscarData.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String textoInicio = campoDataInicio.getText();
+				String textoFim = campoDataFim.getText();
+
+				DateTimeFormatter formatoEntrada = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+				LocalDate dataInicio;
+				LocalDate dataFim;
+
+				try {
+					dataInicio = LocalDate.parse(textoInicio, formatoEntrada);
+					dataFim = LocalDate.parse(textoFim, formatoEntrada);
+				} catch (DateTimeParseException ex) {
+					JOptionPane.showMessageDialog(TelaCadastro.this,
+							"Datas inválidas. Por favor, insira datas no formato dd/MM/yyyy.",
+							"Erro",
+							JOptionPane.ERROR_MESSAGE);
+							return;
+				}
+				List<Cliente> encontrados = dao.buscarPorIntervaloDeData(dataInicio, dataFim);
+
+				if(encontrados.isEmpty()) {
+					JOptionPane.showMessageDialog(TelaCadastro.this,
+							"Nenhum cliente encontrado nesse intervalo de datas.",
+							"Aviso",
+							JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				modelo.atualizarTabela((ArrayList<Cliente>) encontrados);
+			}
+			
+		});
+
+		btnBuscarData.setBounds(330, 158, 150, 27);
+		panel.add(btnBuscarData);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(23, 395, 690, 196);
+		scrollPane.setBounds(23, 432, 690, 196);
 		contentPane.add(scrollPane);
 		
 		table = new JTable();
@@ -325,7 +389,6 @@ public class TelaCadastro extends JFrame {
 		});
 		mnNewMenu.add(mntmSair);
 		
-		
 		JMenu mnNewMenuEditar = new JMenu("Editar");
 		menuBar.add(mnNewMenuEditar);
 		
@@ -355,8 +418,17 @@ public class TelaCadastro extends JFrame {
 		
 		JMenu mnNewMenu_3 = new JMenu("Sobre");
 		menuBar.add(mnNewMenu_3);
-	}
-	
+
+}
+	private JFormattedTextField criarCampoData() {
+			try {
+				MaskFormatter mask = new MaskFormatter("##/##/####");
+				mask.setPlaceholderCharacter('_');
+				return new JFormattedTextField(mask);
+			} catch (ParseException e) {
+				return new JFormattedTextField();
+			}
+		}
 	private void carregarDados(File file, ClienteTableModel modelo) {
 		try {
 			fileReader = new FileReader(file);

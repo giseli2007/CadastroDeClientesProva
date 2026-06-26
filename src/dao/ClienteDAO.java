@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -156,4 +157,35 @@ public class ClienteDAO {
 		}
 		return clientes;
 	}
+
+	public List<Cliente> buscarPorIntervaloDeData(LocalDate dataInicio, LocalDate dataFim) {
+    String sql = "SELECT * FROM clientes WHERE data_cadastro BETWEEN ? AND ?";
+    List<Cliente> clientes = new ArrayList<>();
+
+    try (Connection conexao = Conexao.conectar();
+         PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+        stmt.setString(1, dataInicio.toString()); // já sai como yyyy-MM-dd
+        stmt.setString(2, dataFim.toString());
+
+        try (ResultSet resultSet = stmt.executeQuery()) {
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String nome = resultSet.getString("nome");
+                String telefone = resultSet.getString("telefone");
+                String email = resultSet.getString("email");
+                String sexo = resultSet.getString("sexo");
+                String dataCadastro = resultSet.getString("data_cadastro");
+
+                Cliente cliente = new Cliente(id, nome, telefone, email, sexo);
+                cliente.setDataCadastro(dataCadastro);
+                clientes.add(cliente);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return clientes;
+}
 }
