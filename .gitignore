@@ -1,0 +1,5 @@
+bin/
+clientes.db
+*.db
+*.class
+clientes.db
