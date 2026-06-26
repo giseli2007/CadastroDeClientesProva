@@ -40,6 +40,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.awt.event.ActionEvent;
@@ -413,13 +414,204 @@ public class TelaCadastro extends JFrame {
 		});
 		mnNewMenuEditar.add(mntmAtualizar);
 		
-		JMenu mnNewMenu_2 = new JMenu("Preferências");
-		menuBar.add(mnNewMenu_2);
+		JMenu mnFerramentas = new JMenu("Ferramentas");
+		menuBar.add(mnFerramentas);
+
+		JMenuItem mntmImportarCsvValidado = new JMenuItem("Importar CSV Validado");
+		mntmImportarCsvValidado.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser jFileChooser = new JFileChooser();
+				if(jFileChooser.showOpenDialog(TelaCadastro.this) == JFileChooser.APPROVE_OPTION) {
+					File file = jFileChooser.getSelectedFile();
+					importarCsvValidado(file, modelo);
+				}
+			}
+		});
+		mnFerramentas.add(mntmImportarCsvValidado);
+
+		JMenuItem mntmExportaRelatorio = new JMenuItem("Exportar Relatório");
+		mntmExportaRelatorio.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser jFileChooser = new JFileChooser();
+				jFileChooser.setSelectedFile(new File("relatorio_clientes.txt"));
+				if (jFileChooser.showSaveDialog(TelaCadastro.this) == JFileChooser.APPROVE_OPTION) {
+					File file = jFileChooser.getSelectedFile();
+					exportarRelatorio(file, modelo);
+				}
+			}
+		});
+		mnFerramentas.add(mntmExportaRelatorio);
 		
 		JMenu mnNewMenu_3 = new JMenu("Sobre");
 		menuBar.add(mnNewMenu_3);
 
 }
+
+	private void importarCsvValidado(File file, ClienteTableModel modelo) {
+    int importados = 0;
+    int rejeitados = 0;
+    StringBuilder linhasInvalidas = new StringBuilder();
+
+    try (FileReader fr = new FileReader(file);
+         BufferedReader br = new BufferedReader(fr)) {
+
+        String cabecalho = br.readLine(); // pula o cabeçalho
+
+        if (cabecalho == null) {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    "O arquivo está vazio.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String linha;
+        int numeroLinha = 1; // já contando o cabeçalho como linha 1
+
+        while ((linha = br.readLine()) != null) {
+            numeroLinha++;
+
+            if (linha.isBlank()) {
+                continue; // ignora linhas vazias no meio do arquivo
+            }
+
+            String[] campos = linha.split(",");
+
+            if (campos.length != 4) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": número de colunas incorreto\n");
+                continue;
+            }
+
+            String nome = campos[0].trim();
+            String telefone = campos[1].trim();
+            String email = campos[2].trim();
+            String sexo = campos[3].trim();
+
+            if (!Regex.validaNome(nome)) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": nome inválido (\"").append(nome).append("\")\n");
+                continue;
+            }
+
+            if (!Regex.validaEmail(email)) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": email inválido (\"").append(email).append("\")\n");
+                continue;
+            }
+
+            if (!Regex.validaTelefone(telefone)) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": telefone inválido (\"").append(telefone).append("\")\n");
+                continue;
+            }
+
+            if (sexo.isBlank()) {
+                rejeitados++;
+                linhasInvalidas.append("Linha ").append(numeroLinha)
+                        .append(": sexo não informado\n");
+                continue;
+            }
+
+            Cliente cliente = new Cliente(nome, telefone, email, sexo);
+            modelo.addCliente(cliente);
+            dao.inserir(cliente);
+            importados++;
+        }
+
+        if (importados == 0 && rejeitados == 0) {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    "O arquivo está vazio.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String resumo = "Registros importados: " + importados
+                + "\nRegistros rejeitados: " + rejeitados;
+
+        if (rejeitados > 0) {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    resumo + "\n\nLinhas inválidas:\n" + linhasInvalidas,
+                    "Importação concluída com rejeições",
+                    JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(TelaCadastro.this,
+                    resumo, "Importação concluída com sucesso",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(TelaCadastro.this,
+                "Erro ao importar o arquivo: " + e.getMessage(), "Erro",
+                JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
+}
+
+	private void exportarRelatorio(File file, ClienteTableModel modelo) {
+		try (FileWriter writer = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(writer)) {
+				
+			int totalClientes = modelo.getRowCount();
+			int totalMasculino = 0;
+			int totalFeminino = 0;
+
+			for(int i = 0; i < totalClientes; i++) {
+				String sexo = (String) modelo.getValueAt(i, 3);
+				if("Masculino".equalsIgnoreCase(sexo)) {
+					totalMasculino++;
+				} else if ("Feminino".equalsIgnoreCase(sexo)) {
+					totalFeminino++;
+				}
+			}
+
+			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String dataGeracao = LocalDateTime.now().format(formato);
+
+        bw.write("RELATÓRIO DE CLIENTES");
+        bw.newLine();
+        bw.newLine();
+        bw.write("Total de clientes: " + totalClientes);
+        bw.newLine();
+        bw.write("Clientes masculinos: " + totalMasculino);
+        bw.newLine();
+        bw.write("Clientes femininos: " + totalFeminino);
+        bw.newLine();
+        bw.newLine();
+        bw.write("--- Listagem de Clientes ---");
+        bw.newLine();
+
+        for (int i = 0; i < totalClientes; i++) {
+            String nome = (String) modelo.getValueAt(i, 0);
+            String telefone = (String) modelo.getValueAt(i, 1);
+            String email = (String) modelo.getValueAt(i, 2);
+            String sexo = (String) modelo.getValueAt(i, 3);
+
+            bw.write("Nome: " + nome + " | Telefone: " + telefone
+                    + " | Email: " + email + " | Sexo: " + sexo);
+            bw.newLine();
+        }
+
+        bw.newLine();
+        bw.write("Relatório gerado em: " + dataGeracao);
+
+        JOptionPane.showMessageDialog(TelaCadastro.this,
+                "Relatório exportado com sucesso!", "Sucesso",
+                JOptionPane.INFORMATION_MESSAGE);
+
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(TelaCadastro.this,
+                "Erro ao gerar o relatório: " + e.getMessage(), "Erro",
+                JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
+}
+
 	private JFormattedTextField criarCampoData() {
 			try {
 				MaskFormatter mask = new MaskFormatter("##/##/####");
