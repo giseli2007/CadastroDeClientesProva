@@ -11,8 +11,7 @@ public class Cliente {
 	private String sexo;
 	private int id;
 	private String dataCadastro;
-	DateTimeFormatter dataformatada = DateTimeFormatter.ofPattern("dd/MM/yyyy");//B3-Q1
-	
+	private static final DateTimeFormatter dataformatada = DateTimeFormatter.ofPattern("yyyy-MM-dd");//B3-Q1, B5-Q3 e da formatacao da data pra ficar igual a do banco de dados
 	public Cliente(String nome, String telefone, String email, String sexo) {
 		this.nome = nome;
 		this.telefone = telefone;
@@ -35,7 +34,8 @@ public class Cliente {
 		this.telefone = telefone;
 		this.email = email;
 		this.sexo = sexo;
-		this.dataCadastro = LocalDate.now().format(dataformatada);//B3-Q1
+		//nesse construtor precisa pega o valor direto do banco de dados, se nao na tabela só vai mostrar todos os usuarios com a data de hoje
+		this.dataCadastro = dataCadastro != null ? dataCadastro : LocalDate.now().format(dataformatada);
 	}
 	
 	public int getId() {
