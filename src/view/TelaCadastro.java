@@ -29,6 +29,7 @@ import dao.ClienteDAO;
 import model.Cliente;
 import model.ClienteTableModel;
 import util.DadosMockados;
+import util.Regex;
 
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -180,6 +181,18 @@ public class TelaCadastro extends JFrame {
 				String email = textEmail.getText().toString();
 				String telefone = textTelefone.getText().toString();
 				String sexo = rdbtnMasculino.isSelected() ? "Masculino" : "Feminino";
+				if (!Regex.validaNome(nome)) {
+					JOptionPane.showMessageDialog(TelaCadastro.this, "Nome inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if(!Regex.validaEmail(email)) {
+					JOptionPane.showMessageDialog(TelaCadastro.this, "Email inválido", "Erro", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if(!Regex.validaTelefone(telefone)) {
+					JOptionPane.showMessageDialog(TelaCadastro.this, "Telefone inválido", "Erro", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				if (nome.isBlank() || email.isBlank() || telefone.isBlank() 
 						|| sexo.isBlank()) {
 					JOptionPane.showMessageDialog(TelaCadastro.this, 

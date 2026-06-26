@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.BorderLayout;
+
 import java.awt.FlowLayout;
 
 import javax.swing.ButtonGroup;
@@ -11,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import model.Cliente;
+import util.Regex;
 
 import java.awt.GridLayout;
 import javax.swing.JLabel;
@@ -124,6 +126,19 @@ public class TelaAtualizar extends JDialog {
         String telefone = textFieldTelefone.getText().toString();
         String email = textFieldEmail.getText().toString();
         String sexo = rdbtnMasculino.isSelected() ? "Masculino" : "Feminino";
+        
+        if (!Regex.validaNome(nome)) {
+			JOptionPane.showMessageDialog(TelaAtualizar.this, "Nome inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		if(!Regex.validaEmail(email)) {
+			JOptionPane.showMessageDialog(TelaAtualizar.this, "Email inválido", "Erro", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		if(!Regex.validaTelefone(telefone)) {
+			JOptionPane.showMessageDialog(TelaAtualizar.this, "Telefone inválido", "Erro", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
         if (nome.isBlank() || telefone.isBlank() || email.isBlank()) {
             JOptionPane.showMessageDialog(
