@@ -1,4 +1,7 @@
 package model;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 public class Cliente {
 	
@@ -7,12 +10,15 @@ public class Cliente {
 	private String email;
 	private String sexo;
 	private int id;
+	private String dataCadastro;
+	DateTimeFormatter dataformatada = DateTimeFormatter.ofPattern("dd/MM/yyyy");//B3-Q1
 	
 	public Cliente(String nome, String telefone, String email, String sexo) {
 		this.nome = nome;
 		this.telefone = telefone;
 		this.email = email;
 		this.sexo = sexo;
+		this.dataCadastro = LocalDate.now().format(dataformatada);//B3-Q1
 	}
 	
 	public Cliente(int id, String nome, String telefone, String email, String sexo) {
@@ -21,6 +27,15 @@ public class Cliente {
 		this.email = email;
 		this.sexo = sexo;
 		this.id = id;
+		this.dataCadastro = LocalDate.now().format(dataformatada);//B3-Q1
+	}
+	public Cliente(int id, String nome, String telefone, String email, String sexo, String dataCadastro) {
+		this.id = id;
+		this.nome = nome;
+		this.telefone = telefone;
+		this.email = email;
+		this.sexo = sexo;
+		this.dataCadastro = LocalDate.now().format(dataformatada);//B3-Q1
 	}
 	
 	public int getId() {
@@ -50,6 +65,14 @@ public class Cliente {
 	}
 	public void setSexo(String sexo) {
 		this.sexo = sexo;
+	}
+
+	public String getDataCadastro() {
+		return dataCadastro;
+	}
+
+	public void setDataCadastro(String dataCadastro) {
+		this.dataCadastro = dataCadastro;
 	}
 	
 	
