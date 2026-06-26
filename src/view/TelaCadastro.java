@@ -40,6 +40,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.awt.event.ActionEvent;
@@ -413,13 +414,87 @@ public class TelaCadastro extends JFrame {
 		});
 		mnNewMenuEditar.add(mntmAtualizar);
 		
-		JMenu mnNewMenu_2 = new JMenu("Preferências");
-		menuBar.add(mnNewMenu_2);
+		JMenu mnFerramentas = new JMenu("Ferramentas");
+		menuBar.add(mnFerramentas);
+
+		JMenuItem mntmExportaRelatorio = new JMenuItem("Exportar Relatório");
+		mntmExportaRelatorio.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser jFileChooser = new JFileChooser();
+				jFileChooser.setSelectedFile(new File("relatorio_clientes.txt"));
+				if (jFileChooser.showSaveDialog(TelaCadastro.this) == JFileChooser.APPROVE_OPTION) {
+					File file = jFileChooser.getSelectedFile();
+					exportarRelatorio(file, modelo);
+				}
+			}
+		});
+		mnFerramentas.add(mntmExportaRelatorio);
 		
 		JMenu mnNewMenu_3 = new JMenu("Sobre");
 		menuBar.add(mnNewMenu_3);
 
 }
+
+	private void exportarRelatorio(File file, ClienteTableModel modelo) {
+		try (FileWriter writer = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(writer)) {
+				
+			int totalClientes = modelo.getRowCount();
+			int totalMasculino = 0;
+			int totalFeminino = 0;
+
+			for(int i = 0; i < totalClientes; i++) {
+				String sexo = (String) modelo.getValueAt(i, 3);
+				if("Masculino".equalsIgnoreCase(sexo)) {
+					totalMasculino++;
+				} else if ("Feminino".equalsIgnoreCase(sexo)) {
+					totalFeminino++;
+				}
+			}
+
+			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String dataGeracao = LocalDateTime.now().format(formato);
+
+        bw.write("RELATÓRIO DE CLIENTES");
+        bw.newLine();
+        bw.newLine();
+        bw.write("Total de clientes: " + totalClientes);
+        bw.newLine();
+        bw.write("Clientes masculinos: " + totalMasculino);
+        bw.newLine();
+        bw.write("Clientes femininos: " + totalFeminino);
+        bw.newLine();
+        bw.newLine();
+        bw.write("--- Listagem de Clientes ---");
+        bw.newLine();
+
+        for (int i = 0; i < totalClientes; i++) {
+            String nome = (String) modelo.getValueAt(i, 0);
+            String telefone = (String) modelo.getValueAt(i, 1);
+            String email = (String) modelo.getValueAt(i, 2);
+            String sexo = (String) modelo.getValueAt(i, 3);
+
+            bw.write("Nome: " + nome + " | Telefone: " + telefone
+                    + " | Email: " + email + " | Sexo: " + sexo);
+            bw.newLine();
+        }
+
+        bw.newLine();
+        bw.write("Relatório gerado em: " + dataGeracao);
+
+        JOptionPane.showMessageDialog(TelaCadastro.this,
+                "Relatório exportado com sucesso!", "Sucesso",
+                JOptionPane.INFORMATION_MESSAGE);
+
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(TelaCadastro.this,
+                "Erro ao gerar o relatório: " + e.getMessage(), "Erro",
+                JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
+}
+
 	private JFormattedTextField criarCampoData() {
 			try {
 				MaskFormatter mask = new MaskFormatter("##/##/####");
