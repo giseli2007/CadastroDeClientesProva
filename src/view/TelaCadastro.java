@@ -213,6 +213,11 @@ public class TelaCadastro extends JFrame {
 					dao.excluir(cliente.getId());
 					modelo.removerCliente(indice);
 				}
+				else {
+					JOptionPane.showMessageDialog(TelaCadastro.this, "Selecione um cliente para excluir!", 
+							"Aviso", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
 				
 			}
 		});
