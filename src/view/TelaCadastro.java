@@ -449,6 +449,14 @@ public class TelaCadastro extends JFrame {
 
 }
 
+	private boolean validarCliente(String nome, String telefone, String email, String sexo) {
+		//valida nome , telefone e email
+	    if (!Regex.validaNome(nome)) return false;
+	    if (!Regex.validaEmail(email)) return false;
+	    if (!Regex.validaTelefone(telefone)) return false;
+	    if (sexo == null || sexo.isBlank()) return false;
+	    return true;
+	}
 	private void importarCsvValidado(File file, ClienteTableModel modelo) {
     int importados = 0;
     int rejeitados = 0;
@@ -489,32 +497,10 @@ public class TelaCadastro extends JFrame {
             String telefone = campos[1].trim();
             String email = campos[2].trim();
             String sexo = campos[3].trim();
-
-            if (!Regex.validaNome(nome)) {
+            if (!validarCliente(nome, telefone, email, sexo)) {
                 rejeitados++;
                 linhasInvalidas.append("Linha ").append(numeroLinha)
-                        .append(": nome inválido (\"").append(nome).append("\")\n");
-                continue;
-            }
-
-            if (!Regex.validaEmail(email)) {
-                rejeitados++;
-                linhasInvalidas.append("Linha ").append(numeroLinha)
-                        .append(": email inválido (\"").append(email).append("\")\n");
-                continue;
-            }
-
-            if (!Regex.validaTelefone(telefone)) {
-                rejeitados++;
-                linhasInvalidas.append("Linha ").append(numeroLinha)
-                        .append(": telefone inválido (\"").append(telefone).append("\")\n");
-                continue;
-            }
-
-            if (sexo.isBlank()) {
-                rejeitados++;
-                linhasInvalidas.append("Linha ").append(numeroLinha)
-                        .append(": sexo não informado\n");
+                        .append(": dados incorretos\n");
                 continue;
             }
 
