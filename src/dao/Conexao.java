@@ -12,16 +12,25 @@ public class Conexao {
 	private static String url = "jdbc:sqlite:clientes.db";
 
 	static {
-		//vai rodar enquando a classe é carregada pra nao dar erro na conexao
-		try {
-			Connection conexao = DriverManager.getConnection(url);
-			Statement stmt = conexao.createStatement();
-			stmt.execute("ALTER TABLE clientes ADD COLUMN data_cadastro TEXT");
-			stmt.close();
-			conexao.close();
-		} catch (Exception e) {
-			//faz nada se a coluna já existir
-		}
+	    try {
+	        Connection conexao = DriverManager.getConnection(url);
+	        Statement stmt = conexao.createStatement();
+
+	        try {
+	        	//coloca a coluna data_cadastro no banco de dados
+	            stmt.execute("ALTER TABLE clientes ADD COLUMN data_cadastro TEXT");
+	        } catch (Exception e) {
+	            //caso nao de pra colocar a coluna, não faz nada
+	        }
+	        //Correcao do B3-Q2: vai preencher as data_cadastro de todos os que estão como null no banco de dados
+	        stmt.execute("UPDATE clientes SET data_cadastro = DATE('now') WHERE data_cadastro IS NULL");
+
+	        stmt.close();
+	        conexao.close();
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 	}
 
 	public static Connection conectar() {
