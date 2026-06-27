@@ -1,7 +1,8 @@
 package model;
 
 import java.util.ArrayList;
-
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import javax.swing.table.AbstractTableModel;
 
 public class ClienteTableModel extends AbstractTableModel{
@@ -39,7 +40,16 @@ public class ClienteTableModel extends AbstractTableModel{
 		case 3:
 			return cliente.getSexo();
 		case 4:
-			return cliente.getDataCadastro(); //B3-14
+		    String data = cliente.getDataCadastro();
+		    if (data != null && !data.isBlank()) {
+		        try {
+		            LocalDate d = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy-MM-dd"));//pega a data que é string no banco de dados e tranforma pra Localdate que ´e como ta na classe cliente
+		            return d.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));//ai essa funcao pega essa variavel Local date e volta pra string, mas com uma formatacao mais padrao 
+		        } catch (Exception e) {
+		            return data;
+		        }
+		    }
+		    return data;
 		default:
 			return null;
 		}

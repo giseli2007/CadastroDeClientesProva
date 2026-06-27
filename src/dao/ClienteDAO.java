@@ -7,6 +7,9 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
+
+
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -158,34 +161,36 @@ public class ClienteDAO {
 		return clientes;
 	}
 
-	public List<Cliente> buscarPorIntervaloDeData(LocalDate dataInicio, LocalDate dataFim) {
-    String sql = "SELECT * FROM clientes WHERE data_cadastro BETWEEN ? AND ?";
-    List<Cliente> clientes = new ArrayList<>();
+	public ArrayList<Cliente> buscarPorIntervaloDeData(LocalDate dataInicial, LocalDate dataFinal) {
+	    String sql = "SELECT * FROM clientes WHERE data_cadastro BETWEEN ? AND ?";
+	    ArrayList<Cliente> clientes = new ArrayList<>();
 
-    try (Connection conexao = Conexao.conectar();
-         PreparedStatement stmt = conexao.prepareStatement(sql)) {
+	    try (Connection conexao = Conexao.conectar();
+	         PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
-        stmt.setString(1, dataInicio.toString()); // já sai como yyyy-MM-dd
-        stmt.setString(2, dataFim.toString());
+	        stmt.setString(1, dataInicial.toString());
+	        stmt.setString(2, dataFinal.toString());
 
-        try (ResultSet resultSet = stmt.executeQuery()) {
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String nome = resultSet.getString("nome");
-                String telefone = resultSet.getString("telefone");
-                String email = resultSet.getString("email");
-                String sexo = resultSet.getString("sexo");
-                String dataCadastro = resultSet.getString("data_cadastro");
-
-                Cliente cliente = new Cliente(id, nome, telefone, email, sexo);
-                cliente.setDataCadastro(dataCadastro);
-                clientes.add(cliente);
-            }
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-
-    return clientes;
-}
+	        try (ResultSet resultSet = stmt.executeQuery()) {
+	            while (resultSet.next()) {
+	                int id = resultSet.getInt("id");
+	                String nome = resultSet.getString("nome");
+	                String telefone = resultSet.getString("telefone");
+	                String email = resultSet.getString("email");
+	                String sexo = resultSet.getString("sexo");
+	                String dataCadastro = resultSet.getString("data_cadastro");
+	                clientes.add(new Cliente(id, nome, telefone, email, sexo, dataCadastro));
+	            }
+	        }
+	    } catch (SQLException e) {
+	        JDialog dialog = new JDialog((JFrame) null, "Erro", true);
+	        dialog.setSize(850, 100);
+	        dialog.setResizable(true);
+	        dialog.add(new JLabel("Erro na busca por período! Erro: " + e.getMessage()));
+	        dialog.setLocationRelativeTo(null);
+	        dialog.setVisible(true);
+	        e.printStackTrace();
+	    }
+	    return clientes;
+	}
 }
