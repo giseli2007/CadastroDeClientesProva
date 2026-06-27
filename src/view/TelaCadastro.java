@@ -626,7 +626,14 @@ public class TelaCadastro extends JFrame {
 			fileReader = new FileReader(file);
 			bufferedReader = new BufferedReader(fileReader);
 			modelo.limparDados();
-			bufferedReader.readLine();
+			String cabecalho = bufferedReader.readLine();
+			
+	        if (cabecalho == null) {
+	            JOptionPane.showMessageDialog(TelaCadastro.this, "O arquivo está vazio.",
+	            		"Aviso", JOptionPane.WARNING_MESSAGE);//B2-Q2
+	            return;
+	        }
+	        
 			String linha = "";
 			while((linha = bufferedReader.readLine()) != null) {
 				String campos [] = linha.split(",");
@@ -640,7 +647,9 @@ public class TelaCadastro extends JFrame {
 				}
 			}
 		}catch(IOException e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(TelaCadastro.this, "Erro ao ler o arquivo.",
+					"Erro", JOptionPane.ERROR_MESSAGE);
+	        e.printStackTrace();
 		}finally {
 			try {
 				bufferedReader.close();
@@ -663,12 +672,13 @@ public class TelaCadastro extends JFrame {
 				String telefone = (String) modelo.getValueAt(i, 1);
 				String email = (String) modelo.getValueAt(i, 2);
 				String sexo = (String) modelo.getValueAt(i, 3);
-				bufferedWriter.write(nome+","+telefone+","+
-				","+email+","+sexo);
+				bufferedWriter.write(nome+","+telefone+","+email+","+sexo);
 				bufferedWriter.newLine();
 			}
 		}catch(IOException e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(TelaCadastro.this, "Erro ao exportar relatório.",
+					"Erro", JOptionPane.ERROR_MESSAGE);//B2-Q2
+	        e.printStackTrace();
 		}finally {
 			try {				
 				bufferedWriter.close();
